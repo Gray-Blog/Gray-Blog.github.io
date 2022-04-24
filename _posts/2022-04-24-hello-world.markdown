@@ -14,7 +14,7 @@ tags:
 > “Yeah It's on. ”
 
 
-Hux 的 Blog 就这么开通了。
+Gray 的 Blog 就这么开通了。
 
 
 用来写周报的，别摸鱼了。
