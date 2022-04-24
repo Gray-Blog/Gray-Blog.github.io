@@ -79,7 +79,7 @@ ga_domain: auto
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "gray，scuer，a rookie in AI"
-sidebar-avatar: ./img/1650776981336.jpg # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-avatar: https://github.com/Gray-Blog/Gray-Blog.github.io/blob/master/img/1650776981336.jpg # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
