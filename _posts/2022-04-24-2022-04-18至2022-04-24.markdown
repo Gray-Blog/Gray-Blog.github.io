@@ -12,7 +12,7 @@ tags:
     - Multimodal
 ---
 
-# PyTorchLightning
+## PyTorchLightning
 
 上周了解了PyTorchLightning框架，感觉好像很不错的样子，可以基本把代码模板化，训练效率也没有下降，于是这周决定动手用这个框架写一些简单的代码，以后都按这个模板来写。
   + PL的流程很简单，生产流水线，有一个固定的顺序：初始化 def \__init\__(self) -->训练training_step(self, batch, batch_idx) --> 校验validation_step(self, batch, batch_idx) --> 测试 test_step(self, batch, batch_idx). 就完事了，总统是实现这三个函数的重写。当然，除了这三个主要的，还有一些其他的函数，为了方便我们实现其他的一些功能，因此更为完整的流程是在training_step 、validation_step、test_step 后面都紧跟着其相应的 training_step_end(self，batch_parts)和training_epoch_end(self, training_step_outputs) 函数，当然，对于校验和测试，都有相应的\*_step_end和*_epoch_end函数.上述的这些函数都集成在pl.LightningModule模块中。同时，训练数据都利用继承LightningDataModule模块的类来生成train_dataloader、val_dataloader、test_dataloader.
@@ -21,12 +21,12 @@ tags:
 &nbsp;
   + 简单利用PL搭建了几个语义分割的网络，这里是链接:  [代码](https://github.com/gray311/AlveolarNet)
 
-# Kaggle Competition H&M
+## Kaggle Competition H&M
 
 + 这个比赛任务大概是利用客户的之前的购买记录，来预测客户未来的购买商品。题目给了很多数据，包括购买记录，客户信息，商品的各种信息和其配对的图片，要根据这些数据来进行预测。
 看到既有图片也有文字，我首先想到这是一个多模态的工作，但具体的思路还没有清晰。所有先对这些数据做了[EDA](https://github.com/gray311/Kaggle-Competition-H-M-multimodaldal/blob/main/EDA.ipynb)，打算下周再详细构思写代码。
 
-# Some papers
+## Some papers
 
 这周看了两篇论文，分别是GPT系列(GPT看了，GPT-2，GPT-3改动不大，主要是规模和加入zero-shot和few-shot的区别，所以文章没有细看，衍生的各种应用倒是很有趣)和CLIP。
   + GPT
