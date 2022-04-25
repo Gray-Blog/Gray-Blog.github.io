@@ -15,6 +15,7 @@ tags:
 ## PyTorchLightning
 
 上周了解了PyTorchLightning框架，感觉好像很不错的样子，可以基本把代码模板化，训练效率也没有下降，于是这周决定动手用这个框架写一些简单的代码，以后都按这个模板来写。
+
   + PL的流程很简单，生产流水线，有一个固定的顺序：初始化 def \__init\__(self) -->训练training_step(self, batch, batch_idx) --> 校验validation_step(self, batch, batch_idx) --> 测试 test_step(self, batch, batch_idx). 就完事了，总统是实现这三个函数的重写。当然，除了这三个主要的，还有一些其他的函数，为了方便我们实现其他的一些功能，因此更为完整的流程是在training_step 、validation_step、test_step 后面都紧跟着其相应的 training_step_end(self，batch_parts)和training_epoch_end(self, training_step_outputs) 函数，当然，对于校验和测试，都有相应的\*_step_end和*_epoch_end函数.上述的这些函数都集成在pl.LightningModule模块中。同时，训练数据都利用继承LightningDataModule模块的类来生成train_dataloader、val_dataloader、test_dataloader.
 &nbsp;
   + 另外，PL框架也将很多功能便利化，比如模型保存，配置各种checkpoint；多GPU训练；半精度训练；梯度累计；batchsize缩放；梯度剪裁；小数据集训练等等，都只需要配置参数就好而不需要额外的代码。
@@ -29,6 +30,7 @@ tags:
 ## Some papers
 
 这周看了两篇论文，分别是GPT系列(GPT看了，GPT-2，GPT-3改动不大，主要是规模和加入zero-shot和few-shot的区别，所以文章没有细看，衍生的各种应用倒是很有趣)和CLIP。
+
   + GPT结构基于transformer的解码器，和RNN模型相比transformer在迁移学习的时候学习到的特征更加稳健一些，可能是因为其里面有更加结构化的记忆使得能够处理更长的文本信息从而能够抽取出更好的句子层面和段落层面的语义信息。无监督的预训练方式，给你一组序列预测该序列的下一个词，对比bert的完形填空的方式该任务更难，所以效果不如bert。有监督的fine-tune，两个损失函数，一个是预测下一个词，还有一个是给一个完整的句子预测标签。根据下游任务会调整输入和最后的线性层。
   + GPT-2，因为打不过bert，所以作者采用另一种创新方式，建立了一个新的数据集，引入zero-shot这个更难的任务，子任务不再需要提供相关样本fine-tune，直接采用预训练模型。
   + GPT-3，拥有175 billion参数的模型，和GPT-2一样，同样不需要fine-tune和gradient decent，不同在于对于下游任务采用few-shot。
