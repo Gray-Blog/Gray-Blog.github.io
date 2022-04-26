@@ -1,0 +1,33 @@
+---
+layout:     post
+title:      "Weekly report from 2022.04.11 to 2022.04.17"
+subtitle:   " \"Hello World, Hello Blog\""
+date:       2022-4-217 21:00:00
+author:     "Gray"
+header-img: "img/post-bg-2015.jpg"
+catalog: true
+tags:
+    - NLP
+    - d2l
+    - CV
+---
+
+## Language Models
+
++ 自监督的word2vec模型，包含跳元模型（skip-gram） [Mikolov et al., 2013b]和连续词袋（CBOW）。前者是用中心词去生成上下文的词，后者是用上下文的词来生成中间词。
++ 由于上述两者方法都用到了softmax，即每个中心词要与词库中的其他所有词求点积和，这是不现实的，所以引入近似训练：负采样和分层softmax。前者是将原来的概率函数简化，只看当前词与中心词的点积大小，点积越大，说明生成概率越高。同时引入k个负样本，加入概率函数，要求它们与中心词的点积要小。把K扩展到这个词库大小，就是skip-gram训练方式。后者是将词向量放入一个二叉树的叶子节点，两个词的生成概率是从根出发到叶子节点的所有路径节点的乘积。所有中心词的生成概率联合起来就是该模型的损失函数，之后求偏导做gradient decent就行。
+
+## Some papers
+
+这周看了两篇论文，分别是ViT和Swin Transformer，两篇都是transformer系列在CV上的应用。
+
++ ViT：随着transformer结构在NLP上的大火，于是CV这边眼馋，所以想提出一个纯基于transoformer的网络结构用于CV领域，于是ViT诞生了。ViT整个模型和bert其实是类似的，其中ViT只是将图片分成很多的patch，每个patch+position embedding就代表了bert中的一个token。不过，ViT采用的是有监督的预训练方式，利用一个单独的cls patch来抽象出图片的特征，用于分类，目标识别等下游任务，这也是借鉴bert，因此ViT为未来多模态工作埋了很多坑。
++ 尽管ViT是一个很厉害的工作，但也有一些limitations，比如ViT对数据的依赖性很强，如果没有大规模的数据做pre-train，那么它的效果甚至不如ResNet；另外在ViT中，具有mlp层具有一定的locality和平移不变性，这使得ViT天生包含的inductive bias远少于cnn，这也解释了为什么ViT需要更多的数据训练；对于不同尺度上的特征提取效果不好，因为它始终采用的是全局建模。
++ Swin transformer ，Swin取自Shift window.该方法的提取是为了解决ViT中对于不同尺度上特征提取的问题，同时也为了使模型能够训练够高分辨率的图像，从而使得transformer在视觉任务上真正超越cnn。
++ 在我看来Swin transformer与ViT主要有三个改进。一是：采用了shift window，将原来的全局MSA，变成W-MSA和SW-MSA，前者是为了减小时间复杂度，使模型训练复杂度随图片的大小线性增长而非原来的平方增长，本质上是减小了序列长度。后者是为了实现窗口之间的交互，起到 cross-window connection的作用，保留transformer结构全局建模的优势。二是：patch merging，整个类似于池化下采样把，将相邻的小patch合成一个大patch，这样一个大patch就能看到原来多个小patch看到的内容，相当于增大了感受野，从而能够提取不同尺度的特征，其实就和cnn差不多了。三是：最后输出不再需要一个单独的cls从其他patch中抽取信息，而是可以直接生成特征图用于分割或者检测，也就是说Swin transformer可以作为一个想cnn一样的backbone（其实ViT也可以，CLIP中的image encoder就用的ViT作为backbone）。
+
+总的来说这两篇论文都很惊艳，前者打破了cnn从12年开始的cv统治地位，后者则是将ViT结合上了cnn的优点，同时也衍生出了很多cv方面优秀的论文，可以说去年Swin系列的网络把cv的各大榜单杀了个遍，很牛。
+
+## 大创
+
+这周是大创其中考核，同时还要交一个申请发明专利的初稿。我们这边采用了Swin Unet网络来做医学图像上的语义分割。网络之前就以及配置的差不多了，这周调了调参，效果很奇怪，再bcediceloss上Swin Unet要比普通Unet小0.1个点，但是再IoU上只高了0.01个点，前者能到0.96后者差不多也有0.95。我在想是不是数据集太简单了还是什么原因，暂时有些困惑。至于创新的话，目前想了一个把Swin Unet decoder部分魔改一下，用一个类似CBAM的模块融合一下上下文特征，看看效果能不能好一点把，代码写了还没调。大创中期应该能过，所以不着急，先去看看多模态和NLP那边的东西，CV这边不太感兴趣。
