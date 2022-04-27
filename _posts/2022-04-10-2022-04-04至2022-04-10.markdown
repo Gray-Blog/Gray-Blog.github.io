@@ -24,7 +24,7 @@ tags:
 
 ## Some papers
 
-这周看了一下Gan和CycGan的论文，跟着b站上的白板推导课程手推了一下Gan的公式和最优解，然后用复现了一下CycGan[代码](https://github.com/gray311/AlveolarNet)（后面学了PL框架后，又用PL写了一遍）。
+这周看了一下Gan和CycGan的论文，跟着b站上的白板推导课程手推了一下Gan的公式和最优解，然后用复现了一下CycGan[代码](https://github.com/gray311/Models4PyTorchLightning)（后面学了PL框架后，又用PL写了一遍）。
 
 + Gan的主要目的就是用一个神经网络把随机分布z拟合到我们需要的目标样本x上：$x = NN(z;\theta)$. loss函数是一个最小最大化问题。
 + CycGan稍微复杂一点，相当于两个Gan网络拼在一起，互相欺骗，最后达到一个纳什均衡。主要是在loss函数中多加入了两类loss，一个是consistency loss，目的是要求域A上的图像经过两个生成器后要尽可能靠近原来的A；一个是identity loss，目的是要求域A上的图像经过它自己域上的生成器时，要尽可能保持不变，这也是很好理解的。
