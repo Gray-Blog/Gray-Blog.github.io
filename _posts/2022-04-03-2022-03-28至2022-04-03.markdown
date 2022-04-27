@@ -1,0 +1,23 @@
+---
+layout:     post
+title:      "Weekly report from 2022.03.28 to 2022.04.03"
+subtitle:   " \"Hello World, Hello Blog\""
+date:       2022-4-03 21:00:00
+author:     "Gray"
+header-img: "img/post-bg-2015.jpg"
+catalog: true
+tags:
+    - Generative Model
+    - Normal
+    - GAN
+---
+
+## Some papers
+
+这周偶然看到一个关于人头识别人数的论文MCNN，所以看了一下具体内容，复现了一下[代码](https://github.com/gray311/Models4PyTorchLightning)（后面改成
+
+
+## 
+
+
+##
