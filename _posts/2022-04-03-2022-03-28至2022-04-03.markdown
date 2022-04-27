@@ -7,9 +7,8 @@ author:     "Gray"
 header-img: "img/post-bg-2015.jpg"
 catalog: true
 tags:
-    - Generative Model
-    - Normal
-    - GAN
+    - CNN
+    - Convex Optimization
 ---
 ## Some papers
 
