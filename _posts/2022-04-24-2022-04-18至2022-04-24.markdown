@@ -20,7 +20,7 @@ tags:
 &nbsp;
 + 另外，PL框架也将很多功能便利化，比如模型保存，配置各种checkpoint；多GPU训练；半精度训练；梯度累计；batchsize缩放；梯度剪裁；小数据集训练等等，都只需要配置参数就好而不需要额外的代码。
 &nbsp;
-+ 简单利用PL搭建了几个语义分割的网络，这里是链接:  [代码](https://github.com/gray311/AlveolarNet)
++ 简单利用PL搭建了几个语义分割的网络，这里是链接:  [代码](https://github.com/gray311/Models4PyTorchLightning)
 
 ## Kaggle Competition H&M
 
