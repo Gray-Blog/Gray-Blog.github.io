@@ -32,8 +32,8 @@ tags:
     + all_mlm_labels：512 * 10 表示被mask处理过的词的词索引，同样结果填充变成label，之后于pred做cross entropy就是mask任务的loss。
     + nsp_labels：512 表示每个样本中的第二个segment是否是第一个segment的真正下一句，之后与pred做binary cross entropy就是预测下一句任务的loss。
 
-+ bert结构大致没问题，代码中有些细节。首先是self.segment_embedding = nn.Embedding(2, num_hiddens)，每个样本中的词索引和段缩影都要编码，相加后得到我们熟悉的输入，然后加上位置编码。这里熟悉了我之前没怎么用过的nn.Embedding和nn.Parameter两个函数。之后就丢进几个transformer blk。这样就得到了bert的编码器。
++ bert结构大致没问题，代码中有些细节。首先是self.segment_embedding = nn.Embedding(2, num_hiddens)，每个样本中的词索引和段索引都要编码，相加后得到我们熟悉的输入，然后加上位置编码。这里熟悉了我之前没怎么用过的nn.Embedding和nn.Parameter两个函数。之后就丢进几个transformer blk。这样就得到了bert的编码器。
 + 另外就是两个预训练任务的模块。第一个是MaskLM：该模块输入为bert编码器的输出encode_X 512 * 64 * 768，然后根据样本中自带的 all_pred_positions，选出之前被mask处理过的token所处位置的encode_X_pred 512 * 10 * 768。按我们的设想，该位置上的encode_X应该是原来被mask前的词。因此，我们将该encode_X_pred放入一个包含两个线形层的mlp，最后得到一个mlm_Y_hat 512 * 64 * 10000（10000为词表长度），其中数值最大的索引代表bert预测的词，之后就做cross entropy就行。
 + 第二个任务是NextSentencePred，这个很简单，直接把encode_X后两维flatten 512 * （64*768）丢进一个线性层得到ouput 512 * 2，之后和nsp_labels做一个binary cross entropy。最后两个loss加起来backward就可以开始预训练了。
   
-总的来说bert模型的细节还是有不少的，但看懂其实都挺合乎常理的，nlp中相较于cv的样本，往往多包含一个mask，毕竟每个token长度不一样。这周原计划是做kaggle那个多模态的比赛，但是准备了一个很重要的面试，所以只看了bert代码。。
+总的来说bert模型的细节还是有不少的，但看懂其实都挺合乎常理的，nlp中相较于cv的样本，往往多包含一个mask，毕竟每个token长度不一样。这周原计划是做kaggle那个多模态的比赛，但是准备了一个很重要的面试，所以只看了bert代码。下周的计划应该是打kaggle，然后看一下对比学习或者mixer mlp这种关于transformer结构相关的论文把，到时候再说。
