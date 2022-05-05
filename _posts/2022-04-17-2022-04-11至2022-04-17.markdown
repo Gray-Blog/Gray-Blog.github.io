@@ -4,7 +4,7 @@ title:      "Weekly report from 2022.04.11 to 2022.04.17"
 subtitle:   " \"Hello World, Hello Blog\""
 date:       2022-04-17 21:00:00
 author:     "Gray"
-header-img: "img/post-bg-2015.jpg"
+header-img: "img/post-bg-android.jpg"
 catalog: true
 tags:
     - NLP
