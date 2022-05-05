@@ -4,7 +4,7 @@ title:      "Weekly report from 2022.04.04 to 2022.04.10"
 subtitle:   " \"Hello World, Hello Blog\""
 date:       2022-4-10 21:00:00
 author:     "Gray"
-header-img: "img/post-bg-2015.jpg"
+header-img: "img/post-bg-apple-event-2015.jpg"
 catalog: true
 tags:
     - Generative Model
