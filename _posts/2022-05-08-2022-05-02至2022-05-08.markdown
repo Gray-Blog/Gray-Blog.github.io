@@ -1,0 +1,38 @@
+---
+layout:     post
+title:      "Weekly report from 2022.05.02 to 2022.05.08"
+subtitle:   " \"Hello World, Hello Blog\""
+date:       2022-5-09 23:00:00
+author:     "Gray"
+header-img: "img/post-bg-2015.jpg"
+catalog: true
+tags:
+    - CV
+    - Transformer
+---
+
+## 代码
+
+这星期主要还是在看一些transformer网络的代码，以及用PL框架复现一下。因为要改进SwinUnet，所以也翻了一些文献，看看从哪方面入手，原来决定的改decoder的方法我在最近几年的文献中没有看到有人尝试过，感觉有点不太靠谱，所以在想其他办法。当然，在看代码也发现了一些有意思的库和细节。
+
++ timm库：PyTorchImageModels，简称 timm，是一个巨大的 PyTorch 代码集合，旨在将各种 SOTA 模型整合在一起，并具有复现 ImageNet 训练结果的能力。这个库我个人感觉主要是用作便捷实现其他网络的sota效果，从而来与自己的网络做对比，看看自己网络的效果。同时，里面一些小函数也挺有用的，比如to_2tuple，trunc_normal_等。
++ contiguous()，这个是把tensor变量复值时切开，类似于deepcopy，比如y = torch.transpose(x, 0, 1).continuous()，就是使x，y不共享内存，这样y改变的时候不会影响到x。
++ meshgrid，目的是生成一个二维坐标系，在transformer中用来求RPE挺方便的。
++ register_buffer，这个也很有意思。这个是pytorch中一个复制方法，目的是保存网络结构中那些非网络参数变量，使得网络state_dict中存下该变量，但是optimizer.step又不会更新该变量，比如batchnormal中的running_mean。
++ einops，这个是我觉得最有用的，一个很强大的张量处理库，真的非常好用。比如rerrange，reduce函数，用了都说好。贴上用法[链接](https://zhuanlan.zhihu.com/p/372692913)
++ absl：这个库我是用来代替argparse和logging库的，用来终端传参，和打印变量，感觉还挺好用的。
+
+下面是关于Swin transformer相关代码的一些感想：
+
++ 首先第一个坑，transformer代码中的C，基本都是指patch_w * patch_h * c，这样一个token向量，而不是指通道数。在SwinT中，每个窗口相当于bert中的一个句子（一个样本），里面的patch就是token，所以一个batch的图片（B，w、h，c）扔进去会被window_partition成（numwindows*B，windows_w，windows_h，C）,做自注意力的时候只在一个句子里做（也就是只在窗口里做）。不过SwinT有shift-windows机制，所以它其实是可以实现全局建模的，也就是句子（窗口）和句子（窗口）之间的通信（这里我晕了，好像bert没有这种全局建模的手段啊）。
++ 然后是W-MSA和SW-MSA，这个说起来简单，就是求mask和RPE的过程很折磨，代码实现挺离谱的，反正我是想不到怎么弄。
++ patch_merging和patch_expand，就用到einops这个库，很方便。
+
+## 论文
+
+看了MedT这篇，这篇相当于是SwinT的缩减版，作者在SwinT之前也在想着如何解决ViT图像分辨率不能过大以及不能多尺度建模的问题。
+
++ 作者解决图像分辨率不能过大，其实主要是解决在图片上使用全局注意力时间复杂度太高的问题，所以作者就很巧妙的让每个patch只和它纵轴和横轴方向上的patch做attention，也就是axis attention。在此基础上，作者给每个qk相乘的前面加了G_i这种权重，作为gated，起到一个门控的作用。
++ 多尺度建模，作者做了两次编解码。两次编解码的尺度不同，最后得到特征图concat一下，起到一个类似两个尺度的特征融合。
+
+这周也没干啥，5.1混过去了，惭愧，下周好好做人。
