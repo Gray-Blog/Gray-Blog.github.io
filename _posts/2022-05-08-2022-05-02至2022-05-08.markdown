@@ -24,7 +24,7 @@ tags:
 
 下面是关于Swin transformer相关代码的一些感想：
 
-+ 首先第一个坑，transformer代码中的C，基本都是指patch_w * patch_h * c，这样一个token向量，而不是指通道数。在SwinT中，每个窗口相当于bert中的一个句子（一个样本），里面的patch就是token，所以一个batch的图片（B，w、h，c）扔进去会被window_partition成（numwindows*B，windows_w，windows_h，C）,做自注意力的时候只在一个句子里做（也就是只在窗口里做）。不过SwinT有shift-windows机制，所以它其实是可以实现全局建模的，也就是句子（窗口）和句子（窗口）之间的通信（这里我晕了，好像bert没有这种全局建模的手段啊）。
++ 首先第一个坑，transformer代码中的C，基本都是指patch_w * patch_h * c，这样一个token向量，而不是指通道数。在SwinT中，每个窗口相当于bert中的一个句子（一个样本），里面的patch就是token，所以一个batch的图片（B，w、h，c）扔进去会被window_partition成（numwindows*B，windows_w，windows_h，C）,做自注意力的时候只在一个句子里做（也就是只在窗口里做）。不过SwinT有shift-windows机制，所以它其实是可以实现全局建模的，也就是句子（窗口）和句子（窗口）之间的通信（这里我晕了，好像bert没有这种全局建模的手段啊，好吧，问了智班的大佬，确实没法实现全文本建模，最大建模长度512，只能包含几个句子，目前也有一些手段来增长建模的序列长度）。
 + 然后是W-MSA和SW-MSA，这个说起来简单，就是求mask和RPE的过程很折磨，代码实现挺离谱的，反正我是想不到怎么弄。
 + patch_merging和patch_expand，就用到einops这个库，很方便。
 
