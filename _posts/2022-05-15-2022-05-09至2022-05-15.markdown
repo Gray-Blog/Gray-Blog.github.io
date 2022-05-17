@@ -29,4 +29,4 @@ tags:
   + 于是MoCo相处了两个办法，分别解决large和consistency的问题。前者是通过维护一个queue，也就是每次用key做配对时，只与queue中的query配对，queue是所有负样本的子集，用来近似模拟整个负样本，从而减少时间复杂度。而consistency问题，作者通过动量的思想，因为每个minibatch都会更新一遍$\theta^{k}$，而为了保证$\theta^{q}$的一致性，作者每次更新$\theta^{q}_{t} = m * \theta^{q}_{t-1} + (1-m) * \theta^{k}_{t}$，这样就可以保证每次encoder更新dictionary时，抽取的特征相差不会太大。
   + 代码细节的话其实很简单，论文中也给了清晰的伪代码，给上github[链接](https://github.com/facebookresearch/moco/blob/main/main_moco.py)，注意一个小细节就是，每次做数据增强时，正样本通过aug1增强得到k，而正样本和其他负样本通过aug2增强得到q，也就是说负样本同样也要做aug，这一点我在看论文时并没有注意到。
 
-总的来说，这周事还优点多，进化计算没听过课，这周交作业所以还去看了那方面的文献，然后周末又上了两节NUS的暑期研讨课，deep learning和embedding system，说实话有点水，不过白嫖的也无所谓了。下周继续调模型，看代码把，kaggle比赛上次那个HM也交了，不知道能混个多少名，害。
+总的来说，这周事还有点多，进化计算没听过课，这周交作业所以还去看了那方面的文献，然后周末又上了两节NUS的暑期研讨课，deep learning和embedding system，说实话有点水，不过白嫖的也无所谓了。下周继续调模型，看代码把，kaggle比赛上次那个HM也交了，不知道能混个多少名，害。
