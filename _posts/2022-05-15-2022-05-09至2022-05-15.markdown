@@ -1,0 +1,31 @@
+---
+layout:     post
+title:      "Weekly report from 2022.05.09 to 2022.05.16"
+subtitle:   " \"Hello World, Hello Blog\""
+date:       2022-5-16 23:00:00
+author:     "Gray"
+header-img: "img/post-bg-2015.jpg"
+catalog: true
+tags:
+    - CV
+    - Transformer
+---
+
+
+## 代码 and 论文
+
+先说代码部分，这周依旧在思考如何优化SwinT的代码，也发现了一些原作者代码中的细节和问题。其实关于SwinT的代码细节上周基本已经掌握的差不多了，这周主要是对其中的一些问题提出一些考虑和找一些解决方法，说代码的时候顺便就把论文的思想一起阐述了。
+
++ Swin Transformer V2：
+  + 首先是第一个问题，因为我的工作是做语义分割，所以编码器用了SwinT的预训练模型，然后在我的数据集上做fine-tune，但是因为我的任务对分辨率有比较高的要求，因此需要在565\*565分辨率上finue-tune，但SwinT的pre-train模型一般是在 224\*224上训练的，增大窗口后原来的RPE bias只能通过插值的形式扩大，所以fine-tune时增大窗口会对效果有一定的影响。因此，我去找了SwinT V2的论文和代码，看了一下SwinT V2实现的细节。其实SwinT V2相比原SwinT最主要的不同就在Windowattention这个module上，其他地方的改动主要是由pre-normal变成了post-normal，这个后面论文会说。
+  + 具体看Windowattention上的改动，主要有两个地方一个是relative_position_table变了，原来是通过求一张Wh\*Ww\*2的表，表示第i个patch对第j个patch的相对坐标($\delta x,\delta y$)，然后将这个二维的相对坐标变换成一维坐标($ \delta x *windowsize + \delta y $). 然后根据这个一维坐标索引对应一个parameter矩阵（也就是bias），通过学习这个parameter，得到bias（其实这个RPE的思想在bert中也有拓展，目的是在pre-train只训练512个位置编码，但是用相对位置编码的思想将这个512个编码扩展到512\*512个位置上，从而极大扩展了输入文本的长度，使bert的文本长度问题仅仅受限于做attention时的复杂度，但是相关代码我还没有看过，所以不赘述）。但是现在，由于fine-tune时windows变大，因此原来训练的parameter矩阵就小了，所以要对parameter这个参数矩阵插值，但插值的效果肯定时不如学习来的效果好的，所以要改进。于是，我们考虑SwinT V2，因为决定patch位置信息的是相对坐标($\delta x,\delta y$)，那么我们直接将相对坐标($\delta x,\delta y$)作为参数，丢尽一个MLP网络学习，输出它对应的bias，不就相当于完成了位置编码吗。当然为了减小窗口变化对($\delta x,\delta y$)大小的影响，于是将($\delta x,\delta y$)转化到log坐标系下，使得MLP网络的输入尽可能靠近，得到的bias更好。第二个改进是Scaled cosine attention，就是把点积换成了求余弦相似度，我个人理解就是点积在做softmax尽管会除一个$\sqrt{d}$但是还是无法避免attention map 权重分布过于集中的问题，所以使用余弦相似度可以有效减小差距，使得在大模型中attention map不至于被少部分token所主导，从而提高大模型的训练效果。
+  + 关于pre-LN和post-LN，为什么作者把pre-LN换成了post-LN，这篇博客讲的很清楚[链接](https://kexue.fm/archives/9009)，其实主要就是pre-LN使得transformer模型增加的深度变得很虚，其增加深度在本质上其实是扩大了模型的宽度，故而肯定比不过post-LN这种实际很深的网络，但是pre-LN更好训练一点。
+
++ MoCo：之前对对比学习有一定的了解，但是不深，于是补了kaiming大神的MoCo这篇论文，也学习了一下它的源码，感觉很有意思。
+  + MoCo这篇文章算是我对对比学习一个比较系统的认知把。首先说一下contrastive learning，根据MoCo的总结来说就是，将一组样本分成一个正样本，和若干个负样本，正样本通过一些数据增强分别得到一个key和q_1，其他负样本分别表示为q_2,q_3,q_4...q_n，这些query构成一个dictionary，通过key来查询，其中与它最匹配的，毫无疑问应该是q_1，因此通过不断的学习更新，使得编码器encoder能够准确的抽取出样本中的特征，使得key能准确的从dictionary中与q_1配对。
+  + 文中第一段特别说了一下为什么unsupervised learning在CV上的效果不如NLP，作者认为是两者的信号空间不同，cv的信号空间是连续的，高维的，没有明确语义的，但nlp中的信号是离散的，也就是每一个token都可以作为一个特征，有着各自明确的语义。考虑bert中的MLM任务，其实本质上类似于一个字典查询的任务，只不过它不是根据被mask位置上的token作为key来从这个文本中查询，而是根据上下文的tokens，通过注意力机制得到一个key，从文本（字典）中查询原来的词，这在CV的pretext task中就类似于kaiming大神后来提出的MAE。因此，我觉的MoCo从dictionary-look up这个方面来解释对比学习是很形象的。
+  + 其实看代码而言，MoCo的实现原理并不难，它主要想保证的是两点，dictionary足够大和dictionary的一致性。这两者在本质上是互斥的，也就是说，如果dictionary足够大，那么以imagenet为例，dictionary会有百万个query，如果想要一次性更新encoder，这个复杂度是O(n^2)的，这明显不现实，所以只能通过minibatch更新，这样经过一个epoch才能更新一遍encoder，但由于我们并不能知道每个query在epoch中的更新时间点，所以很可能更新他们encoder提取的特征天差地远，所以就失去了一致性。
+  + 于是MoCo相处了两个办法，分别解决large和consistency的问题。前者是通过维护一个queue，也就是每次用key做配对时，只与queue中的query配对，queue是所有负样本的子集，用来近似模拟整个负样本，从而减少时间复杂度。而consistency问题，作者通过动量的思想，因为每个minibatch都会更新一遍$\theta^{k}$，而为了保证$\theta^{q}$的一致性，作者每次更新$\theta^{q}_{t} = m * \theta^{q}_{t-1} + (1-m) * \theta^{k}_{t}$，这样就可以保证每次encoder更新dictionary时，抽取的特征相差不会太大。
+  + 代码细节的话其实很简单，论文中也给了清晰的伪代码，给上github[链接](https://github.com/facebookresearch/moco/blob/main/main_moco.py)，注意一个小细节就是，每次做数据增强时，正样本通过aug1增强得到k，而正样本和其他负样本通过aug2增强得到q，也就是说负样本同样也要做aug，这一点我在看论文时并没有注意到。
+
+总的来说，这周事还优点多，进化计算没听过课，这周交作业所以还去看了那方面的文献，然后周末又上了两节NUS的暑期研讨课，deep learning和embedding system，说实话有点水，不过白嫖的也无所谓了。下周继续调模型，看代码把，kaggle比赛上次那个HM也交了，不知道能混个多少名，害。
