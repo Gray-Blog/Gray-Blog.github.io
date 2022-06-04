@@ -1,0 +1,17 @@
+---
+layout:     post
+title:      "Weekly report from 2022.05.23 to 2022.05.29"
+subtitle:   " \"Hello World, Hello Blog\""
+date:       2022-5-29 23:00:00
+author:     "Gray"
+header-img: "img/post-bg-2015.jpg"
+catalog: true
+tags:
+    - Bert
+    - Transformer
+    - NLP
+---
+
+## CBLUE
+
+这周参加了CBLUE数据集中的CTC任务，做一个句子分类，然后试了一些方法做了一个benchmark，写了篇[报告](https://github.com/Gray-Blog/Gray-Blog.github.io/blob/master/_posts/%E5%8F%A5%E5%AD%90%E5%88%86%E7%B1%BBCHIP-CTC%E2%80%94%E2%80%94%E9%A9%AC%E8%8B%B1%E6%A2%93.pdf)
