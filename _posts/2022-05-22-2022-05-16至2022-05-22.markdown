@@ -1,0 +1,16 @@
+---
+layout:     post
+title:      "Weekly report from 2022.05.16 to 2022.05.22"
+subtitle:   " \"Hello World, Hello Blog\""
+date:       2022-5-22 23:00:00
+author:     "Gray"
+header-img: "img/post-bg-2015.jpg"
+catalog: true
+tags:
+    - Transformer
+    - Huggingface
+---
+
+## Huggingface
+
+这周主要是用来熟悉Huggingface的各项API了，写了篇[报告](https://github.com/Gray-Blog/Gray-Blog.github.io/blob/master/_posts/pro2_220604_174714.pdf)总结了一些Huggingface的大致模式，还需要后面多多实践。
