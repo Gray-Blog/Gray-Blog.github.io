@@ -17,7 +17,7 @@ tags:
 
 總結一下實現過程中的一些經驗教訓吧（话说我爲什麽是繁體）。
 
-### Part 1.
+### Part 1 T5.
 
 首先第一步肯定是去看huggingface T5的doc。
 
@@ -29,14 +29,41 @@ tags:
 
 + T5模型输入：input_idx,attention_mask,decoder_input_ids,labels （decoder_input_ids和decoder不断生成的tokens按比例混合输入就是teacher forcing）
 
-'''
+```
 supervised training:
 
 input_ids: 'translate English to German: That is good. </s>'
-decoder_input_ids: '<pad> Das ist gut.'
+decoder_input_ids: '<pad> Das ist gut.' (teacher forcing需要这个输入，T5模型内部好像会自动计算，所以也不用传)
 labels: 'Das ist gut. </s>'
-'''
 
-+ decoder_input_ids = target[:,:-1]
+总结：T5模型想计算loss只需要传input_ids（附带attention mask）和labels
+```
+
+```
+unsupervised training: 
+
+这个和bert的MLM其实差不多，都是mask一些token然后预测。
+
+输入序列被哨兵 tokens (论文里称 sentinel tokens) 随机 masked, 输出序列由相同的哨兵 tokens 和真实的掩码 tokens 串联而成。哨兵是 T5Tokenizer 词表中长度为 100 的特殊 tokens:  <extra_id_0>,<extra_id_1>, … <extra_id_99>. 分别对应 id 为 32099，32098，... ，32000。例如，"the cute dog walks in the park" 这句当 mask "cute dog" 和 "the" 时应该进行如下处理:
+
+input_ids = tokenizer('The <extra_id_0> walks in <extra_id_1> park', return_tensors='pt').input_ids
+labels = tokenizer('<extra_id_0> cute dog <extra_id_1> the <extra_id_2>', return_tensors='pt').input_ids
+
+总结：T5模型想计算loss只需要传input_ids（附带attention mask）和labels
+```
   
 + labels = target[:,1:] #且pad位置全部变为-100防止loss计算
+
++ 三种T5模型：T5EncoderModel = Encoder、 T5Model = T5EncoderModel + Decoder 、T5ForConditionalGeneration = T5Model + lmhead (nn.Linear(d_model, vocab_size))，一般用最后那个吧。。
+
+
+### Part 2 bart.
+
+bart和T5是同期的工作，但探索的方向不一样。bart主要是想要统一BERT和GPT，从一开始就确定了使用Transformers的原始结构。BART探究了各种目标函数的有效性，即对输入加各种类型的噪声，在输出时将其还原。
+
+T5的话是语言模型方向的一篇survey吧，主要探索一种语言模型中最优秀的通用结构。最后发现seq2seq结构最好，然后据此做了巨多实验，文章60多页。
+
+在finetune bart过程中，其实和T5差不多。
+
+
+
