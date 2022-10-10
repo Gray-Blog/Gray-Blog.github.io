@@ -1,0 +1,42 @@
+---
+layout:     post
+title:      "T5 和 bart 复现总结"
+subtitle:   " \"Hello World, Hello Blog\""
+date:       2022-9-30 23:00:00
+author:     "Gray"
+header-img: "img/post-bg-2015.jpg"
+catalog: true
+tags: 
+    - NLP
+
+---
+
+## T5 和 bart 复现总结
+
+总共分为两个部分，第一部分是做CNN/DM数据集上的summarization任务；第二部分是复现一下论文中SQuAD的结果，看看情况。
+
+總結一下實現過程中的一些經驗教訓吧（话说我爲什麽是繁體）。
+
+### Part 1.
+
+首先第一步肯定是去看huggingface T5的doc。
+
++ T5 can be trained / fine-tuned both in a supervised and unsupervised fashion.（感觉说）
+
++ Append EOS token to target text（huggingface 的 example上是没有加的，只加了一个prefix）
+
++ T5附录有各种任务数据处理的结构范式，写代码的时候记得看看，一般来说输入句子都要加一个prefix（或者说prompt）。
+
++ T5模型输入：input_idx,attention_mask,decoder_input_ids,labels （decoder_input_ids和decoder不断生成的tokens按比例混合输入就是teacher forcing）
+
+'''
+supervised training:
+
+input_ids: 'translate English to German: That is good. </s>'
+decoder_input_ids: '<pad> Das ist gut.'
+labels: 'Das ist gut. </s>'
+'''
+
++ decoder_input_ids = target[:,:-1]
+  
++ labels = target[:,1:] #且pad位置全部变为-100防止loss计算
